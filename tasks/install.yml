@@ -1,0 +1,6 @@
+---
+- name: Install latest sos packages
+  ansible.builtin.package:
+    name: "{{ sosreport_packages }}"
+    state: latest
+...

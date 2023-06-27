@@ -1,0 +1,30 @@
+---
+- name: "Find sosreport locally"
+  ansible.builtin.find:
+    paths: "{{ sosreport_local_location }}"
+    file_type: file
+    patterns:
+    - "sosreport*.tar.xz"
+  register: sosreports_downloaded
+  delegate_to: localhost
+  run_once: true
+
+- ansible.builtin.include_tasks: upload.yml
+  loop: "{{ sosreports_downloaded.files }}"
+  when:
+    - sosreports_downloaded is defined
+    - sosreports_downloaded.files is defined
+  loop_control:
+     label: "{{ item.path | basename }}"
+  #environment:
+  #  https_proxy: http://192.168.0.100:8080
+  run_once: true
+
+- name: "Remove local sosreports"
+  ansible.builtin.file:
+    path: "{{ sosreport_local_location }}"
+    state: absent
+  when: sosreport_delete_local_sosreports
+  delegate_to: localhost
+  run_once: true
+...

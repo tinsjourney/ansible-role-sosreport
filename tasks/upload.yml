@@ -1,0 +1,28 @@
+---
+- name: "Check for sosreport size : {{ item.path | basename }}"
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+  register: sosreport
+  delegate_to: localhost
+
+- name: "Cancel upload if size is bigger than 1GB : {{ item.path | basename }}"
+  ansible.builtin.assert:
+    that:
+      - sosreport.stat.size / 1024 / 1024 | float <= 1024
+    fail_msg: "For https uploads please note this has a size limit of 1GB"
+    quiet: yes
+
+- name: "Get file md5sum : {{ item.path | basename }}"
+  ansible.builtin.set_fact:
+    sosreport_md5sum: "{{ lookup('ansible.builtin.file', '{{ item.path }}.md5') }}"
+  delegate_to: localhost
+
+- name: "Send {{ item.path | basename }} to case {{ caseNumber }}"
+  upload_sosreport:
+    username: "{{ rhn_user }}"
+    password: "{{ rhn_pass }}"
+    case: "{{ caseNumber }}"
+    file: "{{ item.path }}"
+    desc: "md5 : {{ sosreport_md5sum }}"
+  delegate_to: localhost
+...

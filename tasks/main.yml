@@ -1,0 +1,39 @@
+---
+# tasks file for sosreport
+
+- name: Is remote location set
+  ansible.builtin.assert:
+    that:
+      - sosreport_remote_location is defined
+      - sosreport_remote_location is string
+    quiet: yes
+  run_once: true
+
+- name: Is local location set
+  ansible.builtin.assert:
+    that:
+      - sosreport_local_location is defined
+      - sosreport_local_location is string
+    quiet: true
+  run_once: true
+
+- name: Should we keep remote sosoreports
+  ansible.builtin.assert:
+    that:
+      - sosreport_delete_remote_sosreports  is defined
+      - sosreport_delete_remote_sosreports == sosreport_delete_remote_sosreports|bool
+    quiet: true
+  run_once: true
+
+- name: Should we keep local sosoreports
+  ansible.builtin.assert:
+    that:
+      - sosreport_delete_local_sosreports  is defined
+      - sosreport_delete_local_sosreports == sosreport_delete_local_sosreports|bool
+    quiet: true
+  run_once: true
+
+- ansible.builtin.import_tasks: install.yml
+- ansible.builtin.import_tasks: generate.yml
+- ansible.builtin.import_tasks: fetch.yml
+- ansible.builtin.import_tasks: push.yml

@@ -1,0 +1,46 @@
+---
+- name: "Find sosreport files"
+  ansible.builtin.find:
+    paths: "/var/tmp"
+    file_type: file
+    patterns:
+    - "sosreport*.tar.xz"
+    - "sosreport*.tar.xz.md5"
+  register: sosreports_found
+
+- name: "Change sosreports permission"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: file
+    mode: "0604"
+  loop: "{{ sosreports_found.files }}"
+
+- name: "Create local directory"
+  ansible.builtin.file:
+    path: "{{ sosreport_local_location }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+  run_once: true
+  become: false
+
+- name: "Retrieve sosreports"
+  ansible.builtin.fetch:
+    src: "{{ item.path }}"
+    dest: "{{ sosreport_local_location }}/"
+    flat: yes
+  loop: "{{ sosreports_found.files }}"
+  become: false
+  when:
+    - sosreports_found is defined
+    - sosreports_found.files is defined
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: "Remove sosreports"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ sosreports_found.files }}"
+  when: sosreport_delete_remote_sosreports
+...

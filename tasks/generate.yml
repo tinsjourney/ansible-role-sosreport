@@ -1,0 +1,5 @@
+---
+- name: "Generate sos reports"
+  ansible.builtin.command:
+    cmd: "{{ sosreport_command }}"
+...
