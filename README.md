@@ -1,32 +1,70 @@
-Role Name
+Sosreport
 =========
 
-A brief description of the role goes here.
+Generate, Retrieve and **upload** sosreport to Red Hat Customer Portal.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Ansible 2.9 minimum
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Variables `default/main.yaml`
+
+```
+# Red Hat Customer Portal credentials
+rhn_user: ""
+rhn_pass: ""
+
+# Where to store the sosreport on the managed node
+sosreport_remote_location: "/var/tmp"
+
+# Where to store the sosreport(s) on the controller
+sosreport_local_location: "/var/tmp/{{ caseNumber }}"
+
+# Should we delete sosreport from remote hosts, once downloaded locally
+sosreport_delete_remote_sosreports: true
+# Should we delete downloaded sosreport once uploaded
+sosreport_delete_local_sosreports: true
+
+# Sos default options
+sosreport_options: "--log-size 4096 --all-logs"
+# Extra options to pass to sos command
+sosreport_extra_options: ""
+```
+
+Variables `vars/main.yaml`
+
+```
+sosreport_packages:
+  - sos
+
+sosreport_command: "sos report {{ sosreport_options }} {{ sosreport_extra_options }} --batch --tmp-dir {{ sosreport_remote_location }} --case-id {{ caseNumber }}"
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
-    - hosts: servers
-      become: yes
+    - name: "Generate and Send sosreports to Red Hat Customer Portal"
+      hosts: "{{ nodes }}"
+      become: true
+      gather_facts: false
+
       roles:
-         - role: tinsjourney.sosreport
+        - role: tinsjourney.sosreport
+          vars:
+            - rhn_user: "my_user"
+            - rhn_pass: "my_password"
+            - caseNumber: "01234567"
 
 License
 -------
@@ -36,4 +74,9 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+[Stephane V.](https://www.gnali.org) : tinsjourney@mastodon.top
+
+Special Thanks
+--------------
+
+Role inspired by [Michael Buluma](https://github.com/buluma/ansible-role-sosreport)
