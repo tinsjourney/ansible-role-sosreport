@@ -33,6 +33,9 @@ sosreport_delete_local_sosreports: true
 sosreport_options: "--log-size 4096 --all-logs"
 # Extra options to pass to sos command
 sosreport_extra_options: ""
+
+# Upload to Red Hat ?
+upload: true
 ```
 
 Variables `vars/main.yaml`

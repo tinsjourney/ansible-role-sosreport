@@ -34,6 +34,10 @@
   run_once: true
 
 - ansible.builtin.import_tasks: install.yml
+
 - ansible.builtin.import_tasks: generate.yml
+
 - ansible.builtin.import_tasks: fetch.yml
+
 - ansible.builtin.import_tasks: push.yml
+  when: upload
