@@ -16,8 +16,6 @@
     - sosreports_downloaded.files is defined
   loop_control:
      label: "{{ item.path | basename }}"
-  #environment:
-  #  https_proxy: http://192.168.0.100:8080
   run_once: true
 
 - name: "Remove local sosreports"

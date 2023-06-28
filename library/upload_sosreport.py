@@ -36,34 +36,55 @@ options:
         description: Attached file description
         required: false
         type: str
+    https_proxy:
+        description: http proxy to reach Red Hat Portal
+        required: false
+        type: str
 author:
     - Stephane Vigan (@tinsjourney)
 '''
 
 EXAMPLES = r'''
  - name: 'Upload sosreport to case'
-   upload_sosreport:
+   sosreport:
      username: "my_redhat_portal_user"
      password: "my_redhat_portal_password"
      case: "01234567"
      file: "files/sosreport-xxxxxxxx.tar.xz"
      desc: "sosreport from node1"
+     https_proxy: "http://proxy.corp:3128"
 
 '''
 
 RETURN = r'''
 # These are examples of possible return values, and in general should use other names for return values.
-status_code:
-  description: The HTTP Status Code of the response
+message:
+  description: Response for Red Hat Customer Portal
   returned: success
-  type: int
-  sample: 201
+  type: json
+  sample:
+    "caseNumber": "01234567",
+    "checksum": "fd2c52b799aa48fe23727902efa94d3f7c003e74e542e7a06e27e5379c91637b",
+    "createdBy": "Vigan, Stephane",
+    "createdDate": 1687960175000,
+    "description": "md5 : fea7d03af74ee19ebd832e08f001efe9",
+    "downloadRestricted": false,
+    "fileName": "sosreport-xxxxxxxx.tar.xz",
+    "fileType": "application/x-xz",
+    "id": "a096R000034",
+    "isArchived": false,
+    "isDeprecated": false,
+    "isPrivate": false,
+    "lastModifiedDate": 1687960175000,
+    "link": "https://attachments.access.redhat.com/hydra/rest/cases/01234567/attachments/d4fc5974-2a0a-4187-9b95-ed2335ddcd9c",
+    "modifiedBy": "Vigan, Stephane",
+    "size": 44132832,
+    "sizeKB": 43098.46,
+    "uuid": "d4fc5974-2a0a-4187-9b95-ed2335ddcd9c"
 '''
 
 from ansible.module_utils.basic import AnsibleModule
 import requests
-import json
-from os import environ
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -73,7 +94,7 @@ def run_module():
         case=dict(type='str', required=True),
         file=dict(type='path', required=True),
         desc=dict(type='str'),
-        proxy=dict()
+        https_proxy=dict()
     )
 
 
@@ -84,7 +105,7 @@ def run_module():
     # for consumption, for example, in a subsequent task
     result = dict(
         changed=False,
-        message=''
+        message={}
     )
 
     # the AnsibleModule object will be our abstraction working with Ansible
@@ -111,25 +132,29 @@ def run_module():
       'description': module.params['desc']
     }
 
+    if module.params["https_proxy"]:
+      proxy = {
+        'https': module.params["https_proxy"]
+      }
+
     try:
-      if module.params['proxy']:
-        r = requests.post(url, files=filename, data=data, proxies=module.params['proxy'], auth=(module.params['username'], module.params['password']))
+      if module.params['https_proxy']:
+        r = requests.post(url, files=filename, data=data, proxies=proxy, auth=(module.params['username'], module.params['password']))
       else:
         r = requests.post(url, files=filename, data=data, auth=(module.params['username'], module.params['password']))
         r.raise_for_status()
     except requests.exceptions.HTTPError as errh:
       result['changed'] = False
       module.fail_json(msg=errh.args[0], **result)
-    
 
     # use whatever logic you need to determine whether or not this module
     # made any modifications to your target
     if r.status_code == 201:
         result['changed'] = True
-        result['message'] = json.dumps(r.json(), indent=2)
+        result['message'] = r.json()
     else:
         result['changed'] = False
-        result['message'] = json.dumps(r.json(), indent=2)
+        result['message'] = r.json()
 
     r.close()
 

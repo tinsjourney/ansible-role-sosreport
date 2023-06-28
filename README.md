@@ -18,6 +18,9 @@ Variables `default/main.yaml`
 rhn_user: ""
 rhn_pass: ""
 
+# Proxy to reach Red Hat Customer Portal
+https_proxy: ""
+
 # Where to store the sosreport on the managed node
 sosreport_remote_location: "/var/tmp"
 

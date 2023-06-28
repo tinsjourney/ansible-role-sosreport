@@ -6,7 +6,7 @@
     that:
       - sosreport_remote_location is defined
       - sosreport_remote_location is string
-    quiet: yes
+    quiet: true
   run_once: true
 
 - name: Is local location set

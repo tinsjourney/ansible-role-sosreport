@@ -24,5 +24,11 @@
     case: "{{ caseNumber }}"
     file: "{{ item.path }}"
     desc: "md5 : {{ sosreport_md5sum }}"
+    https_proxy: "{{ https_proxy }}"
   delegate_to: localhost
+  register: message
+
+- name: "Print API answer"
+  ansible.builtin.debug:
+    msg: "{{ message }}"
 ...
